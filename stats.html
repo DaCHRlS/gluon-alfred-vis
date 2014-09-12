@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Freifunk Ruhrgebiet - Alfred Statistiken</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <link rel="stylesheet" type="text/css" href="css/list.css" />
+    
+    <script type="text/javascript" src="lib/frameworks/jquery-1.11.0.min.js"></script>
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+	$(document).ready(function() {
+    $.ajax({
+        url: "alfred_merged.json",
+        dataType: "json"
+    }).done(function(jsondata) {
+        var routers = {};
+        for (var node in jsondata) {
+            if (routers.hasOwnProperty(jsondata[node]["hardware"]["model"])) {
+                routers[jsondata[node]["hardware"]["model"]] += 1;
+            } else {
+                routers[jsondata[node]["hardware"]["model"]] = 1;
+            }
+        }
+        
+        var firmwares = {};
+        for (var node in jsondata) {
+            if (firmwares.hasOwnProperty(jsondata[node]["software"]["firmware"]["release"])){
+                firmwares[jsondata[node]["software"]["firmware"]["release"]] += 1;
+            }else {
+                firmwares[jsondata[node]["software"]["firmware"]["release"]] = 1;
+            
+            }
+        }
+
+        google.load("visualization", "1", {packages: ["corechart"], callback: drawHardware});
+        google.load("visualization", "1", {packages: ["corechart"], callback: drawFirmwares});
+        var datalist = [];
+        datalist.push(["Modell", "Anzahl"]);
+        for (router in routers) {
+            datalist.push([router, routers[router]]);
+        }
+        
+        var firmwarestats = [];
+        firmwarestats.push(["Firmware", "Anzahl"]);
+        for (firmware in firmwares) {
+            firmwarestats.push([firmware, firmwares[firmware]]);
+        }
+        function drawHardware() {
+            var data = google.visualization.arrayToDataTable(datalist);
+            var options = {
+                title: 'Routerstatistik',
+                vAxis: {title: 'Anzahl', titleTextStyle: {color: 'red'}},
+                chartArea: {width: "50%"}
+            };
+            var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        }
+        
+        function drawFirmwares() {
+            var data = google.visualization.arrayToDataTable(firmwarestats);
+            var options = {
+                title: 'Frimwarestatistik',
+                vAxis: {title: 'Anzahl', titleTextStyle: {color: 'red'}}
+            };
+            var chart = new google.visualization.BarChart(document.getElementById('chart_div2'));
+            chart.draw(data, options);
+        }
+    }
+    );
+});
+</script>
+  </head>
+  <body>
+    <header>
+      <h1><a href="/" id="sitelink">freifunk-ruhrgebiet.de</a></h1>
+      <ul>
+        <li><a href="../graph.html">Graph</a></li>
+        <li><a href="../geomap.html">Karte</a></li>
+        <li><a href="../list.html">Liste</a></li>
+        <li><a href="alfred.html">Alfred</a></li>
+		<li><a href="stats.html">Stats</a></li>
+      </ul>
+    </header>
+    <div class="container">
+    <h1>Statistiken</h1>
+	    <div id="chart_div" style="width: 900px; height: 500px;"></div>
+        <div id="chart_div2" style="width: 900px; height: 500px;"></div>
+  </body>
+</html>
+
